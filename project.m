@@ -66,6 +66,8 @@ while ~strcmp(result.status, 'OPTIMAL')
     result = gurobi(model)
 end
 
+result.x
+
 function gs = genSched(T, tau, E, phi, D, dur)
     valid = false;
     v1=0;
