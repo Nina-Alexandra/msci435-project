@@ -12,57 +12,50 @@ phi = 0.202;  % the percent of D during which a team can be active
 % the duration of the activity of type τ (row) for event e (col) for a single team
 % time represented in hours; 0.33 hours ~20 min; 0.094 hours ~5.625 min
 durations = [0.33; 0.33; 0.33; 0.33; 0.094; 0.094; 0.094; 0.094];
-
+    
 schedSize = teams*tau*events;
 
-% generate the first schedule
 schedCollection=genSched(teams, tau, events, phi, D, durations);
 
 % build model
-model.modelname = 'gymnastics';
-model.modelsense = 'min';
+    model.modelname = 'gymnastics';
+    model.modelsense = 'min';
     
 % set data for variables
-ncol = 1;
-model.lb    = zeros(ncol, 1);
-model.ub    = ones(ncol, 1);
-model.obj   = ones(ncol, 1);
-model.vtype = repmat('B', ncol, 1);
-    
-% generate constraints
-model.A     = sparse(schedSize, ncol);
-model.rhs   = ones(schedSize,1);
-model.sense = repmat('=', schedSize, 1);
-
-% fill A matrix
-for s=1:schedSize
-    model.A(s,1) = schedCollection(s,1);
-end
-
-% solve model
-result = gurobi(model)
+    ncol = 1
+    model.lb    = zeros(ncol, 1);
+    model.ub    = ones(ncol, 1);
+    model.obj   = ones(ncol, 1);
+    model.vtype = repmat('B', ncol, 1);
 
 while ~strcmp(result.status, 'OPTIMAL')
-    % generate a new schedule and append to the collection
+    % generate a new schedule
     schedCollection=[schedCollection,genSched(teams, tau, events, phi, D, durations)]
 
-    % update data for variables
+    % set data for variables
     ncol = ncol + 1;
-    model.lb    = [model.lb; 0];
-    model.ub    = [model.ub; 1];
-    model.obj   = [model.obj; 1];
-    model.vtype = [model.vtype; 'B'];
+    model.lb    = zeros(ncol, 1);
+    model.ub    = ones(ncol, 1);
+    model.obj   = ones(ncol, 1);
+    model.vtype = repmat('B', ncol, 1);
     
-    % update constraints
-    model.A = sparse(schedSize, ncol);
-    
-    for s=1:schedSize
-        for h=1:ncol
-            model.A(s,h) = schedCollection(s,h);
+    % label variables
+    row=1;
+    for t = 1:teams
+        for y=1:tau
+            for e=1:events
+                model.varnames{row} = sprintf('team%d-type%d-event%d',t,y,e);
+                row = row + 1;
+            end
         end
     end
     
-    % resolve model
+    % generate constraints
+    model.A     = schedCollection;
+    model.rhs   = ones(teams*tau*events,1);
+    model.sense = repmat('=', teams*tau*events, 1);
+    
+    % solve model
     result = gurobi(model)
 end
 
