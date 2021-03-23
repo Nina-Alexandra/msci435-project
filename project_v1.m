@@ -24,6 +24,8 @@ function gs = genSched(T, tau, E, phi, D, dur)
     valid = false;
     v1=0;
     v2=0;
+    v3=0;
+    v4=0;
     while valid == false
         % generate a random schedule
         % https://www.mathworks.com/matlabcentral/answers/111540-generating-a-random-binary-matrix
@@ -66,8 +68,37 @@ function gs = genSched(T, tau, E, phi, D, dur)
             v2=1;
         end
 
+        % Warm-up and competition for the same event must happen on the same day
+        checkWarmUpAndComp=zeros(T,E);
+        for t=1:T
+            for e=1:E
+                if sched((t-1)*tau*E+e)==sched((t-1)*tau*E+E+e)
+                    checkWarmUpAndComp(t,e)=1;
+                end
+            end
+        end
+        if sum(checkWarmUpAndComp)==T*E
+            v3=1;
+        end
+        
+        % If one team competes in an event on a day, then all teams compete in that
+        % event on that day
+        checkAllOrNoneCompete=zeros(E,1);
+        for e=1:E
+            numCompeting=0;
+            for t=1:T
+                numCompeting=numCompeting+sched((t-1)*tau*E+E+e);
+            end
+            if numCompeting==0 || numCompeting==T
+                checkAllOrNoneCompete(e)=1;
+            end
+        end
+        if sum(checkAllOrNoneCompete)==E
+            v4=1;
+        end
+
         % If all tests pass then add sched to schedCollection
-        if (v1+v2)==2
+        if (v1+v2+v3+v4)==4
             valid=true;
         end
     end
