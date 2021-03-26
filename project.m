@@ -1,17 +1,17 @@
 % setup gurobi for use with matlab
 % https://www.gurobi.com/documentation/9.1/quickstart_mac/matlab_setting_up_grb_for_.html
 
-teams      = 8; % number of teams
+teams      = 12; % number of teams
 tau        = 2; % number of activity types: warm-up and competition
 events     = 4; % number of events: floor, vault bars, beam
 facilities = 2; % number of facilities
 
 D   = 14;   % available facility time (total facility hours in a day)
-phi = 0.202;  % the percent of D during which a team can be active
+phi = 0.25;  % the percent of D during which a team can be active
 
 % the duration of the activity of type τ (row) for event e (col) for a single team
 % time represented in hours; 0.33 hours ~20 min; 0.094 hours ~5.625 min
-durations = [0.33; 0.33; 0.33; 0.33; 0.094; 0.094; 0.094; 0.094];
+durations = [0.75; 0.4167; 0.4167; 0.5; 0.09375; 0.09375; 0.09375; 0.09375];
 
 schedSize = teams*tau*events;
 
