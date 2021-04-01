@@ -8,24 +8,115 @@ events     = 4; % number of events: floor, vault, bars, beam
 facilities = 2; % number of facilities
 slots = 840; % set of time slots in a day (1 min/time slot - total time facility is open)
 
-nTeamEngage = tau*teams*slots*events; % number of x decision variables
-nTeamStarts = tau*teams*slots*events; % number of gamma decision variables
-nBroadcasts = slots*events; % number of y decision variables
+nTeamEngage = teams*tau*events*slots; % number of x decision variables
+nBroadcasts = events*slots; % number of y decision variables
+nTeamStarts = teams*tau*events*slots; % number of gamma decision variables
 
 D   = 14;   % available facility time (total hours in a day facility is open)
 
 durations = [45,25,25,30,6,6,6,6]; %  duration of each activity type (w1,w2,w3,w4,c1,c2,c3,c4) in # of slots/mins (rounded up)
 
-broadcastWeight = randi(10,events*slots,1); % broadcast weight for event e at timeslot s -> need to determine a logical weighting scheme 
+% broadcastWeight = randi(10,events*slots,1); % broadcast weight for event e at timeslot s -> need to determine a logical weighting scheme 
+
+%Set the broadcast weight values for each hour of the tournament 
+h1 = 0;
+h2 = 0;
+h3 = 3;
+h4 = 3;
+h5 = 7;
+h6 = 7;
+h7 = 7;
+h8 = 3;
+h9 = 3;
+h10 = 5;
+h11 = 10;
+h12 = 10;
+h13 = 10;
+h14 = 10;
+
+%Set the broadcast weight values for each event
+flWeight = 10;
+vaWeight = 5;
+baWeight = 7;
+beWeight = 5;
+
+broadcastWeight = [];
+
+% i=1;
+% for i=1:60
+%     broadcastWeight(
+% end
+
+broadcastWeight(1:60,1)= repmat(h1+flWeight,60,1);
+broadcastWeight(61:120,1)= repmat(h2+flWeight,60,1);
+broadcastWeight(121:180,1)= repmat(h3+flWeight,60,1);
+broadcastWeight(181:240,1)= repmat(h4+flWeight,60,1);
+broadcastWeight(241:300,1)= repmat(h5+flWeight,60,1);
+broadcastWeight(301:360,1)= repmat(h6+flWeight,60,1);
+broadcastWeight(361:420,1)= repmat(h7+flWeight,60,1);
+broadcastWeight(421:480,1)= repmat(h8+flWeight,60,1);
+broadcastWeight(481:540,1)= repmat(h9+flWeight,60,1);
+broadcastWeight(541:600,1)= repmat(h10+flWeight,60,1);
+broadcastWeight(601:660,1)= repmat(h11+flWeight,60,1);
+broadcastWeight(661:720,1)= repmat(h12+flWeight,60,1);
+broadcastWeight(721:780,1)= repmat(h13+flWeight,60,1);
+broadcastWeight(781:840,1)= repmat(h14+flWeight,60,1);
+
+broadcastWeight(841:900,1)= repmat(h1+vaWeight,60,1);
+broadcastWeight(901:960,1)= repmat(h2+vaWeight,60,1);
+broadcastWeight(961:1020)= repmat(h3+vaWeight,60,1);
+broadcastWeight(1021:1080,1)= repmat(h4+vaWeight,60,1);
+broadcastWeight(1081:1140,1)= repmat(h5+vaWeight,60,1);
+broadcastWeight(1141:1200,1)= repmat(h6+vaWeight,60,1);
+broadcastWeight(1201:1260,1)= repmat(h7+vaWeight,60,1);
+broadcastWeight(1261:1320,1)= repmat(h8+vaWeight,60,1);
+broadcastWeight(1321:1380,1)= repmat(h9+vaWeight,60,1);
+broadcastWeight(1381:1440,1)= repmat(h10+vaWeight,60,1);
+broadcastWeight(1441:1500,1)= repmat(h11+vaWeight,60,1);
+broadcastWeight(1501:1560,1)= repmat(h12+vaWeight,60,1);
+broadcastWeight(1561:1620,1)= repmat(h13+vaWeight,60,1);
+broadcastWeight(1621:1680,1)= repmat(h14+vaWeight,60,1);
+
+broadcastWeight(1681:1740,1)= repmat(h1+baWeight,60,1);
+broadcastWeight(1741:1800,1)= repmat(h2+baWeight,60,1);
+broadcastWeight(1801:1860,1)= repmat(h3+baWeight,60,1);
+broadcastWeight(1861:1920,1)= repmat(h4+baWeight,60,1);
+broadcastWeight(1921:1980,1)= repmat(h5+baWeight,60,1);
+broadcastWeight(1981:2040,1)= repmat(h6+baWeight,60,1);
+broadcastWeight(2041:2100,1)= repmat(h7+baWeight,60,1);
+broadcastWeight(2101:2160,1)= repmat(h8+baWeight,60,1);
+broadcastWeight(2161:2220,1)= repmat(h9+baWeight,60,1);
+broadcastWeight(2221:2280,1)= repmat(h10+baWeight,60,1);
+broadcastWeight(2281:2340,1)= repmat(h11+baWeight,60,1);
+broadcastWeight(2341:2400,1)= repmat(h12+baWeight,60,1);
+broadcastWeight(2401:2460,1)= repmat(h13+baWeight,60,1);
+broadcastWeight(2461:2520,1)= repmat(h14+baWeight,60,1);
+
+broadcastWeight(2521:2580,1)= repmat(h1+beWeight,60,1);
+broadcastWeight(2581:2640,1)= repmat(h2+beWeight,60,1);
+broadcastWeight(2641:2700,1)= repmat(h3+beWeight,60,1);
+broadcastWeight(2701:2760,1)= repmat(h4+beWeight,60,1);
+broadcastWeight(2761:2820,1)= repmat(h5+beWeight,60,1);
+broadcastWeight(2821:2880,1)= repmat(h6+beWeight,60,1);
+broadcastWeight(2881:2940,1)= repmat(h7+beWeight,60,1);
+broadcastWeight(2941:3000,1)= repmat(h8+beWeight,60,1);
+broadcastWeight(3001:3060,1)= repmat(h9+beWeight,60,1);
+broadcastWeight(3061:3120,1)= repmat(h10+beWeight,60,1);
+broadcastWeight(3121:3180,1)= repmat(h11+beWeight,60,1);
+broadcastWeight(3181:3240,1)= repmat(h12+beWeight,60,1);
+broadcastWeight(3241:3300,1)= repmat(h13+beWeight,60,1);
+broadcastWeight(3301:3360,1)= repmat(h14+beWeight,60,1);
+
 
 % build model
 model.modelname = 'gymnastics_model2';
 model.modelsense = 'max';
     
 % set data for variables
-        %ncol = value of the largest width of the constraints
+        %ncol = total number of columns in the A matrix 
+        %(# of DVs = %164,640)
         %nrow = the total number of rows in the A matrix 
-        ncol = nTeamsEngage + nTeamStarts + nBroadcasts;
+        ncol = nTeamsEngage + nBroadcasts + nTeamStarts;
         model.lb    = zeros(ncol, 1);
         model.ub    = ones(ncol, 1);
         model.obj   = broadcastWeight;
@@ -35,20 +126,26 @@ model.modelsense = 'max';
 % generate constraints
           model.A     = sparse(nrow, ncol); 
 %         model.rhs   = TBD -> RHS value of the constraints 
-          model.sense = [repmat('>=', RHS_c1, 1); repmat('>=', RHS_c2, 1); repmat('<=',RHS_c3,1); 
-                        repmat('<=',RHS_c4,1); repmat('>=',RHS_c5,1); repmat('>=',RHS_c6,1);
-                        repmat('>=',RHS_c7,1); repmat('<=',RHS_c8,1); repmat('<=',RHS_c9,1)]; % indicating that the obj is to minimize?
-                % is >= and <= being represented properly?
+          model.sense = [repmat('>=', numRowsC1, 1); repmat('>=', numRowsC2, 1); repmat('<=',numRowsC3,1); 
+                        repmat('<=',numRowsC4,1); repmat('>=',numRowsC5,1); repmat('>=',numRowsC6,1);
+                        repmat('>=',numRowsC7,1); repmat('<=',numRowsC8,1); repmat('<=',numRowsC9,1)];  % is >= and <= being represented properly?
 
 
 %CONSTRAINT 1
-%A matrix
-    %Dimension = 96x840 
-    %coefficients are 1 or 0... dependent on the schedule output from model
-    %1
-%RHS 
-      RHS_c1 = repmat(transpose(durations),teams,1);
+%A matrix Dimension = 96x840 
+numRowsC1 = teams*tau*events;
+slotCounterEnd = slots;
+slotCounterStart = 1;
+
+for j = 1:numRowsC1
+    model.A(j,slotCounterStart:slotCounterEnd) = ones(1,slots);
+    slotCounterEnd = slotCounterEnd + slots;
+    slotCounterStart = slotCounterStart + slots;
+end      
       
+
+RHS_c1 = repmat(transpose(durations),teams,1);
+         
       
 % !!!!CONSTRAINT 2 (TO DO)
 %A matrix
@@ -58,10 +155,16 @@ model.modelsense = 'max';
       
 
 %CONSTRAINT 3
-%A matrix
-    %Dimension = 10080x8 
-%RHS 
-      RHS_c3 = ones(10080,1);
+%A matrix - Dimension = 10080x8 
+numRowsC3 = teams*slots;
+
+for m = %ROW TBC (based on C2):numRowsC3+numRowsC2+numRowsC1
+    model.A(m,x_1111+x_1121+x_1131+ ) = ones(1,%corresponding w/up and comp slots for each team );
+end      
+      
+RHS_c3 = ones(numRowsC3,1);
+      
+      
       
       
  %CONSTRAINT 4
@@ -94,28 +197,25 @@ model.modelsense = 'max';
       
       
   %CONSTRAINT 8
-%A matrix
-    %Dimension = 840X4 
+%A matrix - Dimension = 840X4 
 %RHS 
-      RHS_c8 = ones(840,1);
+numRowsC8 = slots; 
+RHS_c3 = ones(numRowsC8,1); 
       
+      
+ 
       
   %CONSTRAINT 9
-%A matrix
-    %Dimension = 3360x13 
+%A matrix - Dimension = 3360x13 
     %col 1 - 12 relates to DV x, col 13 is DV y
 %RHS 
       RHS_c9 = zeros(3360,1);
 
 
+      
+      
    
-      
-      
-      
-
-
-
-
+     
 % fill A matrix
 % for rows s  1 to 64, 
 for s=1:schedSize
