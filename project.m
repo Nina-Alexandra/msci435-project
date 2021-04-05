@@ -10,8 +10,8 @@ D   = 14;   % available facility time (total facility hours in a day)
 phi = 0.25;  % the percent of D during which a team can be active
 
 % the duration of the activity of type τ (row) for event e (col) for a single team
-% time represented in hours; 0.33 hours ~20 min; 0.094 hours ~5.625 min
-durations = [0.75; 0.4167; 0.4167; 0.5; 0.09375; 0.09375; 0.09375; 0.09375];
+% time represented in hours
+durations = [0.75; 0.4; 0.4; 0.5; 0.1; 0.1; 0.1; 0.1];
 
 schedSize = teams*tau*events;
 
@@ -109,6 +109,7 @@ function gs = genSched(T, tau, E, phi, D, dur)
             if max(fac1WarmUp, fac2WarmUp)+compTime<=D
                 checkEventsActivities(e)=1;
             end
+
         end
         if sum(checkEventsActivities)==E
             v2=1;

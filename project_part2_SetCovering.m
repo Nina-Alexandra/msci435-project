@@ -31,7 +31,7 @@ schedCollection=[firstSched, firstSched];
 
 % build model
 model.modelname = 'gymnastics_2';
-model.modelsense = 'min';
+model.modelsense = 'max';
     
 % set data for variables
 ncol = 2;
@@ -42,10 +42,10 @@ model.vtype = repmat('B', ncol, 1);
     
 % generate constraints
 nC1 = events*nEpochs;
-nConstraints = nC1+facilities
+nConstraints = nC1+facilities;
 
 model.A     = sparse(nConstraints, ncol);
-model.rhs   = [ones(nC1,1);teams/facilities*ones(facilities,1)];
+model.rhs   = [2*ones(nC1,1);teams/facilities*ones(facilities,1)];
 model.sense = [repmat('<', nC1, 1);repmat('=', facilities, 1)];
 
 % fill A matrix
@@ -98,14 +98,12 @@ result.x
 function gs = genSched(E, slots, dur_matrix)
     valid = false;
     while valid == false
-        % generate a random schedule
-        % https://www.mathworks.com/matlabcentral/answers/111540-generating-a-random-binary-matrix
         sched = zeros(slots,E);
         for e=1:E
             warmUpDur = dur_matrix(1,e);
             compDur = dur_matrix(2,e);
             warmUp = ones(warmUpDur,1);
-            comp = ones(compDur,1);
+            comp = 2*ones(compDur,1);
             slotsUsed = warmUpDur + compDur;
             slotsBefore = randi([0 (slots - slotsUsed)],1,1);
             slotsUsed = slotsUsed + slotsBefore;
@@ -120,7 +118,7 @@ function gs = genSched(E, slots, dur_matrix)
         % A team can only do one activity-event at a time
         checkNoOverlap=zeros(slots,1);
         for s=1:slots
-            if sum(sched(s,:))<=1
+            if nnz(sched(s,:))<=1
                 checkNoOverlap(s)=1;
             end
         end
