@@ -7,7 +7,7 @@ eventNames = ["floor", "vault", "bars", "beam"];
 facilities = 2; % number of facilities
 
 facilityHours = 14;   % available facility time (total facility hours in a day)
-epochSize = 60; %given in minutes
+epochSize = 60; % given in minutes
 nEpochs = facilityHours*60/epochSize; 
 
 % the duration of the activity of type τ (row) for event e (col) for a single team
@@ -37,7 +37,8 @@ model.obj   = [zeros(nX,1);broadcastWeights];
 model.vtype = repmat('B', ncol, 1);
     
 % set up constraints
-nC1 = nEpochs;
+%nC1 = nEpochs*facilities;
+nC1=0;
 nC2 = nEpochs*teams;
 nC3 = teams*events;
 nC4 = nEpochs*events*facilities;
@@ -46,13 +47,15 @@ nC6 = nEpochs*events;
 nConstraints = nC1+nC2+nC3+nC4+nC5+nC6;
 
 model.A     = sparse(nConstraints, ncol);
-model.rhs   = [epochSize*ones(nC1,1);
-               ones(nC2+nC3+nC4+nC5,1);
+% model.rhs   = [epochSize*ones(nC1,1);
+%                ones(nC2+nC3+nC4+nC5,1);
+%                zeros(nC6,1)];
+model.rhs   = [ones(nC2+nC3+nC4+nC5,1);
                zeros(nC6,1)];
-model.sense = repmat('<', nConstraints,1);
+model.sense = [repmat('<', nC1+nC2,1);repmat('=', nC3,1);repmat('<', nC4+nC5+nC6,1)];
 
 % fill A matrix
-model.A(1:nC1,:)  = constraint1(nEpochs,teams, events, durationsMinutes);
+%model.A(1:nC1,:)  = constraint1(nEpochs,teams, events, facilities, durationsMinutes);
 colsFilled = nC1;
 model.A(colsFilled+1:colsFilled+nC2,:) = constraint2(nEpochs, teams, events);
 colsFilled = colsFilled + nC2;
@@ -68,43 +71,73 @@ model.A(colsFilled+1:colsFilled+nC6,:) = constraint6(nEpochs, teams, events);
 result = gurobi(model);
 
 % format results
-result.x
 
-x_vars = result.x(1:nX);
-y_vars = result.x(nX+1:ncol);
+x_vars = reshape(result.x(1:nX),[nEpochs,teams*events]);
+y_vars = reshape(result.x(nX+1:ncol), [nEpochs, events]);
 
-tableSizeX = [nEpochs teams*events];
-colNamesX = cell(1,teams*events);
+x_results = zeros(nEpochs,events*facilities);
+for e=1:events
+    for t=1:teams
+        for s=1:nEpochs
+            if x_vars(s,4*(t-1)+e)~=0
+                if t<= teams/facilities
+                    x_results(s,e) = t;
+                else
+                    x_results(s,e+events) = t;
+                end
+            end
+        end
+    end
+end
+
+colNamesX = cell(1,facilities*events);
 counter=1;
-for t=1:teams
+for f=1:facilities
     for e=1:events
-        colNamesX{counter} = ['Team' num2str(t) '-' eventNames{e}];
+        colNamesX{counter} = ['F' num2str(f) '-' eventNames{e}];
         counter = counter + 1;
     end
 end
-tableTypesX = cell(1,teams*events);
-tableTypesX(:) = {'double'};
+
+colNamesY = cell(1,events);
+for e=1:events
+    colNamesY{e} = eventNames{e};
+end
+
 epochLabels = cell(1,nEpochs);
 for s=1:nEpochs
     epochLabels{s} = num2str(s,'%02d');
 end
 
+tableX = array2table(x_results);
+tableX.Properties.VariableNames(:) = colNamesX;
+tableX.Properties.RowNames(:) = epochLabels;
 
-tableX = table('Size', tableSizeX,'VariableTypes',tableTypesX,'VariableNames',colNamesX, 'RowNames', epochLabels);
+tableY = array2table(y_vars);
+tableY.Properties.VariableNames(:) = colNamesY;
+tableY.Properties.RowNames(:) = epochLabels;
 
+tableX
+tableY
 
-function c1 = constraint1(slots, T, E, durMinutes)
-    rows = slots;
+function c1 = constraint1(slots, T, E, F, durMinutes)
+    rows = slots*F;
     Ay = zeros(rows,slots*E);
     Ax = zeros(rows,T*E*slots);
     
-    Ax_base = eye(rows);
-    for te=1:T*E
+    TinF = T/F;
+    Ax_base1 = eye(slots);
+    Ax_base2 = zeros(slots, TinF*E*slots);
+    empty = zeros(slots,TinF*E*slots);
+    for te=1:TinF*E
         e = mod(te,E);
         if e==0
             e = 4;
         end
-        Ax(:,slots*(te-1)+1:slots*te) = durMinutes(e)*Ax_base;
+        Ax_base2(:,slots*(te-1)+1:slots*te) = durMinutes(e)*Ax_base1;
+    end
+    for f=1:F
+        Ax(slots*(f-1)+1:slots*f,:) = [repmat(empty,1,(f-1)),Ax_base2,repmat(empty,1,(F-f))];
     end
     c1 = [Ax,Ay];
 end

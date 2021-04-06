@@ -2,8 +2,9 @@
 % https://www.gurobi.com/documentation/9.1/quickstart_mac/matlab_setting_up_grb_for_.html
 
 teams      = 12; % number of teams
-tau        = 2; % number of activity types: warm-up and competition
+tau        = 1; % number of activity types: warm-up and competition
 events     = 4; % number of events: floor, vault bars, beam
+eventNames = ["floor", "vault", "bars", "beam"];
 facilities = 2; % number of facilities
 
 D   = 14;   % available facility time (total facility hours in a day)
@@ -11,7 +12,8 @@ phi = 0.25;  % the percent of D during which a team can be active
 
 % the duration of the activity of type τ (row) for event e (col) for a single team
 % time represented in hours
-durations = [0.75; 0.4; 0.4; 0.5; 0.1; 0.1; 0.1; 0.1];
+%durations = [0.75; 0.4; 0.4; 0.5; 0.1; 0.1; 0.1; 0.1];
+durations = [1; 0.5; 0.5; 1];
 
 schedSize = teams*tau*events;
 
@@ -44,7 +46,7 @@ result = gurobi(model)
 
 while ~strcmp(result.status, 'OPTIMAL')
     % generate a new schedule and append to the collection
-    schedCollection=[schedCollection,genSched(teams, tau, events, phi, D, durations)]
+    schedCollection=[schedCollection,genSched(teams, tau, events, phi, D, durations)];
 
     % update data for variables
     ncol = ncol + 1;
@@ -66,7 +68,24 @@ while ~strcmp(result.status, 'OPTIMAL')
     result = gurobi(model)
 end
 
-result.x
+selectedScheds = schedCollection(1:events,find(result.x));
+nDays = sum(result.x);
+
+colNames = cell(1,nDays);
+for d=1:nDays
+    colNames{d} = ['Day ' num2str(d)];
+end
+
+rowNames = cell(1,events);
+for e=1:events
+    rowNames{e} = eventNames{e};
+end
+
+tableX = array2table(selectedScheds);
+tableX.Properties.VariableNames(:) = colNames;
+tableX.Properties.RowNames(:) = rowNames;
+
+tableX
 
 function gs = genSched(T, tau, E, phi, D, dur)
     valid = false;
@@ -96,17 +115,21 @@ function gs = genSched(T, tau, E, phi, D, dur)
         for e=1:E
             fac1WarmUp=0;
             fac2WarmUp=0;
-            compTime=0;
+            compTime1=0;
+            compTime2=0;
             for t=1:T
                 if t<=T/2
                     fac1WarmUp = fac1WarmUp + sched((t-1)*tau*E+e)*dur(e);
+                    %compTime1 = compTime1 + sched((t-1)*tau*E+E+e)*dur(E+e);
                 else
                     fac2WarmUp = fac2WarmUp + sched((t-1)*tau*E+e)*dur(e);
+                    %compTime2 = compTime2 + sched((t-1)*tau*E+E+e)*dur(E+e);
                 end
-                compTime = compTime + sched((t-1)*tau*E+E+e)*dur(E+e);
+                %compTime = compTime + sched((t-1)*tau*E+E+e)*dur(E+e);
             end
 
-            if max(fac1WarmUp, fac2WarmUp)+compTime<=D
+            %if max(fac1WarmUp, fac2WarmUp)+compTime<=D
+            if max(fac1WarmUp+compTime1, fac2WarmUp+compTime2)<=D
                 checkEventsActivities(e)=1;
             end
 
