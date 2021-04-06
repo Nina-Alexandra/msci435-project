@@ -16,7 +16,7 @@ durationsMinutes = [51,30,30,36];
 durationsEpochs = ceil(durationsMinutes./epochSize);
 
 % broadcast weight for the event (row) and time slot (col)
-broadcastWeights = reshape(broadcastMatrix(),[],1);
+broadcastWeights = reshape(broadcastMatrix(nEpochs, events),[],1);
 
 % initalize model
 model.modelname = 'gymnastics_2';
