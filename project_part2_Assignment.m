@@ -16,15 +16,12 @@ durationsMinutes = [51,30,30,36];
 durationsEpochs = ceil(durationsMinutes./epochSize);
 
 % broadcast weight for the event (row) and time slot (col)
-broadcastWeightsMatrix = [repmat(4,1,nEpochs);
-                          repmat(3,1,nEpochs);
-                          repmat(3,1,nEpochs);
-                          repmat(2,1,nEpochs)];
-broadcastWeights = reshape(broadcastWeightsMatrix',[],1);
+broadcastWeights = reshape(broadcastMatrix(),[],1);
 
 % initalize model
 model.modelname = 'gymnastics_2';
 model.modelsense = 'max';
+params.outputflag = 0;
     
 % set data for variables
 nX = teams*events*nEpochs;
@@ -68,7 +65,7 @@ colsFilled = colsFilled + nC5;
 model.A(colsFilled+1:colsFilled+nC6,:) = constraint6(nEpochs, teams, events);
 
 % solve model
-result = gurobi(model);
+result = gurobi(model,params);
 
 % format results
 
