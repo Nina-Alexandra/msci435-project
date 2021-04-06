@@ -23,6 +23,7 @@ schedCollection=genSched(teams, tau, events, phi, D, durations);
 % build model
 model.modelname = 'gymnastics';
 model.modelsense = 'min';
+params.outputflag = 0;
     
 % set data for variables
 ncol = 1;
@@ -42,9 +43,12 @@ for s=1:schedSize
 end
 
 % solve model
-result = gurobi(model)
+result = gurobi(model,params);
 
+iteration = 1;
 while ~strcmp(result.status, 'OPTIMAL')
+    iteration = iteration + 1;
+    disp(['Solving... Iteration ' num2str(iteration)]);
     % generate a new schedule and append to the collection
     schedCollection=[schedCollection,genSched(teams, tau, events, phi, D, durations)];
 
@@ -64,8 +68,8 @@ while ~strcmp(result.status, 'OPTIMAL')
         end
     end
     
-    % resolve model
-    result = gurobi(model)
+    % re-solve model
+    result = gurobi(model,params);
 end
 
 selectedScheds = schedCollection(1:events,find(result.x));
