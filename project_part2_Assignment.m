@@ -5,6 +5,7 @@ teams      = 12; % number of teams
 events     = 4; % number of events: floor, vault bars, beam
 eventNames = ["floor", "vault", "bars", "beam"];
 facilities = 2; % number of facilities
+B          = 1; % number of broadcast channels
 
 facilityHours = 14;   % available facility time (total facility hours in a day)
 epochSize = 60; % given in minutes
@@ -47,7 +48,8 @@ model.A     = sparse(nConstraints, ncol);
 % model.rhs   = [epochSize*ones(nC1,1);
 %                ones(nC2+nC3+nC4+nC5,1);
 %                zeros(nC6,1)];
-model.rhs   = [ones(nC2+nC3+nC4+nC5,1);
+model.rhs   = [ones(nC2+nC3+nC4,1);
+               B*ones(nC5,1);
                zeros(nC6,1)];
 model.sense = [repmat('<', nC1+nC2,1);repmat('=', nC3,1);repmat('<', nC4+nC5+nC6,1)];
 
@@ -114,8 +116,9 @@ tableY = array2table(y_vars);
 tableY.Properties.VariableNames(:) = colNamesY;
 tableY.Properties.RowNames(:) = epochLabels;
 
-tableX
-tableY
+disp(tableX);
+disp(tableY);
+disp(['Objective Function: ' num2str(result.objval)]);
 
 function c1 = constraint1(slots, T, E, F, durMinutes)
     rows = slots*F;
