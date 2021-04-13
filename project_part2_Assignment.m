@@ -35,6 +35,8 @@ model.obj   = [zeros(nX,1);broadcastWeights];
 model.vtype = repmat('B', ncol, 1);
     
 % set up constraints
+% constraint 1 was removed from the model because it was too restrictive
+% constraints 2-6 here are labelled 1-5 in the report
 %nC1 = nEpochs*facilities;
 nC1=0;
 nC2 = nEpochs*teams;
