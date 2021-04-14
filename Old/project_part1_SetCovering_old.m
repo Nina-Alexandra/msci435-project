@@ -1,7 +1,7 @@
-function [m1, days] = project_part1_SetCovering(numStartVectors)
+function [m1, days] = project_part1_SetCovering()
     % setup gurobi for use with matlab
     % https://www.gurobi.com/documentation/9.1/quickstart_mac/matlab_setting_up_grb_for_.html
-    % numStartVectors=1;
+
     teams      = 12; % number of teams
     tau        = 1; % number of activity types: warm-up and competition are combined
     events     = 4; % number of events: floor, vault bars, beam
@@ -21,19 +21,16 @@ function [m1, days] = project_part1_SetCovering(numStartVectors)
 
     schedSize = teams*tau*events;
 
-    % generate the first numStartVectors schedules
-    schedCollection=zeros(schedSize,numStartVectors);
-    for n=1:numStartVectors
-        schedCollection(:,n)=genSched(teams, tau, events, phi, D, durations);
-    end
-    
+    % generate the first schedule
+    schedCollection=genSched(teams, tau, events, phi, D, durations);
+
     % build model
     model.modelname = 'gymnastics';
     model.modelsense = 'min';
     params.outputflag = 0;
 
     % set data for variables
-    ncol = numStartVectors;
+    ncol = 1;
     model.lb    = zeros(ncol, 1);
     model.ub    = ones(ncol, 1);
     model.obj   = ones(ncol, 1);
@@ -45,8 +42,8 @@ function [m1, days] = project_part1_SetCovering(numStartVectors)
     model.sense = repmat('=', schedSize, 1);
 
     % fill A matrix
-    for n=1:numStartVectors
-        model.A(:,n) = schedCollection(:,n);
+    for s=1:schedSize
+        model.A(s,1) = schedCollection(s,1);
     end
 
     % solve model
@@ -99,7 +96,6 @@ function [m1, days] = project_part1_SetCovering(numStartVectors)
 
     m1 = tableX;
     days = nDays;
-    %disp(tableX);
 end
     
 function gs = genSched(T, tau, E, phi, D, dur)
